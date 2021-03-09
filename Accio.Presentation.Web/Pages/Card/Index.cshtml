@@ -1,0 +1,373 @@
+﻿@page "{setShortName?}/{cardNumber?}/{langCode?}/{cardName?}"
+@model Accio.Presentation.Web.Pages.Card.IndexModel
+@{
+    var title = $"{Model.Card.Detail.Name} • {Model.Card.CardSet.Name} • {Model.Card.CardNumber} • Accio Harry Potter TCG Search";
+    ViewData["Title"] = title;
+    Layout = "~/Pages/Shared/_SearchLayout.cshtml";
+    ViewData["MetaDescription"] = Model.Card.MetaDescription;
+}
+
+@using System.Linq
+@using Accio.Business.Models.ImageModels
+@using Accio.Business.Models.LessonModels;
+@using Accio.Business.Models.TypeModels;
+@using Accio.Business.Models.RulingRestrictionModels;
+
+@* Required for AJAX async calls *@
+@Html.AntiForgeryToken()
+
+<!-- Begin Content -->
+<main class="w-100">
+    @if (!Model.ShowCardData)
+    {
+        @* No card found message *@
+
+        <div class="single-no-card-container center tc no-cards-container" style="max-width:500px;">
+            <object data="/images/mask.svg" class="no-cards-image" type="image/svg+xml"></object>
+            <h3 class="b no-cards-h3">
+                No card found
+            </h3>
+            <p>
+                We couldn't find a matching card. Return to <a href="/Search">search</a>.
+            </p>
+        </div>
+    }
+    else
+    {
+        @* Card container *@
+        <div class="single-card-main-container">
+            <section class="w-100 mw7-ns center card-content-container">
+                <div class="cf">
+                    <div class="fl w-100 w-50-ns tc">
+                        @{
+                            var smallImage = Model.Card.Images.SingleOrDefault(x => x.Size == ImageSizeType.Small);
+                            var largeImage = Model.Card.Images.SingleOrDefault(x => x.Size == ImageSizeType.Large);
+                            var imageUrl = largeImage == null ? smallImage.Url : largeImage.Url;
+
+                            var orientationClass = "";
+                            var orientation = Model.Card.Detail.Orientation;
+                            if (orientation == "Horizontal")
+                            {
+                                orientationClass = "card-orientation-horizontal";
+                            }
+                            else if (orientation == "Vertical")
+                            {
+                                orientationClass = "card-orientation-vertical";
+                            }
+                            else
+                            {
+                                orientationClass = "card-orientation-none";
+                            }
+                        }
+                        <img class="@orientationClass" src="@imageUrl" />
+                    </div>
+                    <div class="fl w-100 w-50-ns pa0-ns pa3">
+                        @* Card data *@
+                        @{
+                            var cssSegmentClass = "segment-header-border-default";
+                            var lessonType = Model.Card.LessonType;
+                            if (lessonType != null)
+                            {
+                                if (lessonType.Name == Model._lessonService.GetLessonType(TypeOfLesson.CareOfMagicalCreatures).Name)
+                                {
+                                    cssSegmentClass = "segment-header-border-comc";
+                                }
+                                else if (lessonType.Name == Model._lessonService.GetLessonType(TypeOfLesson.Charms).Name)
+                                {
+                                    cssSegmentClass = "segment-header-border-charms";
+                                }
+                                else if (lessonType.Name == Model._lessonService.GetLessonType(TypeOfLesson.Potions).Name)
+                                {
+                                    cssSegmentClass = "segment-header-border-potions";
+                                }
+                                else if (lessonType.Name == Model._lessonService.GetLessonType(TypeOfLesson.Quidditch).Name)
+                                {
+                                    cssSegmentClass = "segment-header-border-quidditch";
+                                }
+                                else if (lessonType.Name == Model._lessonService.GetLessonType(TypeOfLesson.Transfiguration).Name)
+                                {
+                                    cssSegmentClass = "segment-header-border-transfig";
+                                }
+                            }
+                        }
+                        <div class="single-card-segment br2 @cssSegmentClass">
+                            <div class="dt dt--fixed">
+                                <div class="dt-row">
+                                    <div class="cf">
+                                        <div class="v-mid mv2">
+                                            <div class="fl w-70 tl">
+                                                <div class="card-row-item-content b">
+                                                    @Model.Card.Detail.Name
+                                                </div>
+                                            </div>
+                                            @if (Model.Card.LessonType != null && Model.Card.LessonCost != null)
+                                            {
+                                                var lessonTypeImageUrl = $"/images/lessons/{Model.Card.LessonType.ImageName}";
+                                                <div class="fl w-30 tl">
+                                                    <div class="card-row-item-content-right tr">
+                                                        <label class="@Model.Card.LessonType.CssClassName card-lesson-label v-mid">@Model.Card.LessonCost</label>
+                                                        <img src="@lessonTypeImageUrl" class="v-mid card-lesson-image" />
+                                                    </div>
+                                                </div>
+                                            }
+                                        </div>
+                                    </div>
+
+                                    <hr class="segment-divider" />
+                                </div>
+                                <div class="dt-row">
+                                    <div class="v-mid mv2 flex items-center ml0i">
+                                        @{
+                                            var cardTypeElements = new List<string>();
+                                            cardTypeElements.Add($"<div class=\"card-type b mr0\">{@Model.Card.CardType.Name}</div>");
+
+                                            if (Model.Card.SubTypes?.Count > 0)
+                                            {
+
+                                                foreach (var subType in Model.Card.SubTypes)
+                                                {
+                                                    cardTypeElements.Add($"<div class=\"sub-type-item\">{subType.SubType.Name}</div>");
+                                                }
+                                            }
+                                        }
+
+                                        @Html.Raw("<div class=\"flex flex-wrap card-type-container\">" + string.Join("<div class=\"set-info-separator set-info-item\">●</div>", cardTypeElements) + "</div>")
+                                    </div>
+
+                                    <hr class="segment-divider" />
+                                </div>
+                                <div class="dt-row">
+                                    <div class="card-row-item-content v-mid mv2">
+                                        @{
+                                            var text = "";
+
+                                            var cardType = Model._cardTypeService.GetTypeOfCard(Model.Card.CardType.CardTypeId);
+                                            switch (cardType)
+                                            {
+                                                case TypeOfCard.Adventure:
+                                                    var effect = $"<p><b>Effect:</b> {Model.Card.Detail.Effect}</p>";
+                                                    var toSolve = $"<p><b>To Solve:</b> {Model.Card.Detail.ToSolve}</p>";
+                                                    var reward = $"<p><b>Opponent's Reward:</b> {Model.Card.Detail.Reward}</p>";
+
+                                                    if (!string.IsNullOrEmpty(Model.Card.Detail.Note))
+                                                    {
+                                                        var note = $"<p>{Model.Card.Detail.Note}</p>";
+                                                        text = $"{note}{effect}{toSolve}{reward}";
+                                                    }
+                                                    else
+                                                    {
+                                                        text = $"{effect}{toSolve}{reward}";
+                                                    }
+
+                                                    break;
+                                                case TypeOfCard.Match:
+                                                    var toWin = $"<p><b>To Win:</b> {Model.Card.Detail.ToSolve}</p>";
+                                                    var prize = $"<p><b>Prize:</b> {Model.Card.Detail.Reward}</p>";
+
+                                                    if (!string.IsNullOrEmpty(Model.Card.Detail.Note))
+                                                    {
+                                                        var note = $"<p>{Model.Card.Detail.Note}</p>";
+                                                        text = $"{note}{toWin}{prize}";
+                                                    }
+                                                    else
+                                                    {
+                                                        text = $"{toWin}{prize}";
+                                                    }
+
+                                                    break;
+                                                case TypeOfCard.Creature:
+                                                    text = $"{Model.Card.Detail.Text}";
+                                                    break;
+                                                case TypeOfCard.Lesson:
+                                                case TypeOfCard.Character:
+                                                case TypeOfCard.Item:
+                                                    var providesCount = Model.Card.ProvidesLesson?.ProvidesCount;
+                                                    if (providesCount == null)
+                                                    {
+                                                        text = $"{Model.Card.Detail.Text}";
+                                                        break;
+                                                    }
+
+                                                    var providesImages = "";
+                                                    for (int i = 0; i < providesCount; i++)
+                                                    {
+                                                        var providesImageMarginClassName = "";
+                                                        if (i == 0)
+                                                        {
+                                                            providesImageMarginClassName = "ml2";
+                                                        }
+                                                        else
+                                                        {
+                                                            providesImageMarginClassName = "ml1";
+                                                        }
+                                                        providesImages += $"<img class=\"{providesImageMarginClassName}\" src=\"/images/lessons/{Model.Card.ProvidesLesson.Lesson.ImageName}\" />";
+                                                    }
+                                                    text = $"<p>{Model.Card.Detail.Text}</p><p class=\"flex items-center\"><b>Provides:</b>{providesImages}</p>";
+
+                                                    break;
+                                                case TypeOfCard.Location:
+                                                    var locationText = $"<p>{Model.Card.Detail.Text}</p>";
+                                                    if (!string.IsNullOrEmpty(Model.Card.Detail.Note))
+                                                    {
+                                                        var note = $"<p><i>{Model.Card.Detail.Note}</i></p>";
+                                                        text = $"{note}{locationText}";
+                                                    }
+                                                    else
+                                                    {
+                                                        text = $"{locationText}";
+                                                    }
+
+                                                    break;
+                                                case TypeOfCard.Spell:
+                                                    text = $"{Model.Card.Detail.Text}";
+
+                                                    break;
+                                            }
+                                        }
+
+                                        @Html.Raw(text)
+                                    </div>
+
+                                    <hr class="segment-divider" />
+                                </div>
+                                @if (!string.IsNullOrEmpty(@Model.Card.Detail.FlavorText))
+                                {
+                                    <div class="dt-row">
+                                        <div class="card-row-item-content v-mid mv2">
+                                            <p class="card-row-item-content-flavor">
+                                                @Model.Card.Detail.FlavorText
+                                            </p>
+                                        </div>
+
+                                        <hr class="segment-divider" />
+                                    </div>
+                                }
+                                <div class="dt-row">
+                                    <div class="v-mid mv2">
+                                        <div class="card-row-item-content">
+                                            @{
+                                                var illustrator = Model.Card.Detail.Illustrator;
+                                                var illustratorUrl = $"/search?searchText=artist=\"{illustrator}\"";
+                                            }
+                                            <div class="card-illustrator">Illustrated by <a href="@illustratorUrl" class="single-card-artist-anchor">@illustrator</a></div>
+                                        </div>
+                                    </div>
+
+                                    <hr class="segment-divider" />
+                                </div>
+                                <div class="dt-row">
+                                    <div class="card-row-item-content v-mid mt2 set-info">
+                                        <img src="~/images/seticons/@Model.Card.CardSet.IconFileName" class="set-info-item set-info-icon v-mid" />
+                                        <div class="set-info-item">
+                                            @{
+                                                var searchBySetUrl = $"/search?set={Model.Card.CardSet.ShortName.ToLower()}";
+                                            }
+                                            <a class="single-card-set-anchor" href="@searchBySetUrl">@Model.Card.CardSet.Name</a>
+                                        </div>
+                                        <div class="set-info-separator set-info-item">●</div>
+                                        <div class="set-info-item">@Model.Card.CardNumber</div>
+                                        <div class="set-info-separator set-info-item">●</div>
+                                        <div class="set-info-item">@Model.Card.Rarity.Name</div>
+                                    </div>
+
+                                    <hr class="segment-divider" />
+                                </div>
+                                <div class="dt-row">
+                                    <div class="card-row-item-content v-mid mv2 pb2">
+                                        <p class="card-printings-text mb2">Printings</p>
+                                        <div class="printings-enabled dib">EN</div>
+                                    </div>
+
+                                    <hr class="segment-divider" />
+                                </div>
+                                <div class="dt-row">
+                                    <div class="card-row-item-content v-mid">
+                                        <div class="mw9 center">
+                                            <div class="cf pv2">
+                                                @foreach (var ruling in Model.Card.RulingRestrictions)
+                                                {
+                                                    var restrictionFormat = ruling.Format.ToString();
+                                                    var restrictionShortName = ruling.RulingRestriction.ShortName;
+                                                    var rulingRestrictionCssClassName = "";
+
+                                                    switch (ruling.RulingRestriction.Type)
+                                                    {
+                                                        case RulingRestrictionType.Banned:
+                                                            rulingRestrictionCssClassName = "card-ruling-restriction-banned";
+                                                            break;
+                                                        case RulingRestrictionType.Legal:
+                                                            rulingRestrictionCssClassName = "card-ruling-restriction-legal";
+                                                            break;
+                                                        case RulingRestrictionType.Restricted:
+                                                            rulingRestrictionCssClassName = "card-ruling-restriction-restricted";
+                                                            break;
+                                                        case RulingRestrictionType.NotLegal:
+                                                            rulingRestrictionCssClassName = "card-ruling-restriction-notlegal";
+                                                            break;
+                                                        default:
+                                                            break;
+                                                    }
+
+                                                    <div class="fl w-100 w-50-ns pv2">
+                                                        <div class="cf">
+                                                            <div class="@rulingRestrictionCssClassName tc fl w-70">
+                                                                <div>
+                                                                    @restrictionShortName
+                                                                </div>
+                                                            </div>
+                                                            <div class="fl w-30 pl2 card-ruling-restriction-format-text v-mid">
+                                                                @restrictionFormat
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            <!-- Begin Rulings -->
+            <section class="w-100 mt5-ns mt2 pa0-ns pa3 bg-white">
+                <div class="mw7 center">
+                    @{
+                        if (Model.Rules?.Count > 0)
+                        {
+                            <div class="w-100 pv3-ns pv2 tl">
+                                <h3 class="rule-label">Notes and Rules for <span class="rule-card-name">@Model.Card.Detail.Name</span></h3>
+                                <div>
+                                    @foreach (var rule in Model.Rules)
+                                    {
+                                        <div class="rule-item mv3">
+                                            <div class="mb0">
+                                                @Html.Raw(rule.Ruling)
+                                            </div>
+                                            <div class="rule-date">
+                                                @{
+                                                    var formattedRuleDate = ((DateTime)rule.RulingDate).ToString("yyyy-MM-dd");
+                                                }
+                                                (@formattedRuleDate)
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="w-100 pv5-ns pv4 tc">
+                                <h3>No Data Found</h3>
+                                <p>No notes or rules found for this card</p>
+                            </div>
+                        }
+                    }
+                </div>
+            </section>
+            <!-- End Rulings -->
+        </div>
+    }
+
+</main>

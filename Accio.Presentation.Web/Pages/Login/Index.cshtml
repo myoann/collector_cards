@@ -1,0 +1,40 @@
+﻿@page
+@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor;
+@model Accio.Presentation.Web.Pages.Login.IndexModel
+@{
+    ViewData["Title"] = "Login - Accio Harry Potter TCG Search";
+    Layout = "~/Pages/Shared/_Layout.cshtml";
+}
+
+@Html.AntiForgeryToken()
+
+<div id="homeSearch" class="mw8 center">
+    @* Logo *@
+    <partial name="_AccioLogo" />
+
+    @* Login text *@
+    <p class="login-to-accio">Log in to Accio</p>
+
+    @* Error display *@
+    <div id="errorContainer" class="cf dn">
+        <partial name="_AlertLogo" />
+        <div id="error" class="ml2 mt2 v-mid login-error">
+        </div>
+    </div>
+
+    @* Login form *@
+    <div id="loginContainer" class="ml3 mt3">
+        <div class="cf w-100 center">
+            <input id="emailAddress" class="login-form-input mb3" placeholder="Email address or username" />
+        </div>
+        <div class="cf w-100 center">
+            <input id="password" type="password" class="login-form-input" placeholder="Password" />
+        </div>
+        <div class="cf w-100 center">
+            <a href="" class="login-form-forgot-password">Forgot password?</a>
+        </div>
+        <div class="cf w-100 center">
+            <button id="login" class="login-form-login-button">Login</button>
+        </div>
+    </div>
+</div>

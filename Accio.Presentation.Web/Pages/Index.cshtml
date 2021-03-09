@@ -1,0 +1,52 @@
+﻿@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Accio Harry Potter TCG Search";
+    Layout = "~/Pages/Shared/_Layout.cshtml";
+}
+
+@using System.Linq
+@using Accio.Business.Models.ImageModels
+
+@{
+    var card1 = @Model.RandomCards[0];
+    var card2 = @Model.RandomCards[1];
+    var card3 = @Model.RandomCards[2];
+
+    var firstImage = Model.RandomCards[0].Images.Single(x => x.Size == ImageSizeType.Small);
+    var secondImage = Model.RandomCards[1].Images.Single(x => x.Size == ImageSizeType.Small);
+    var thirdImage = Model.RandomCards[2].Images.Single(x => x.Size == ImageSizeType.Small);
+}
+
+<div id="homeSearch" class="mw8 center">
+    <partial name="_AccioLogo" />
+
+    <h1 class="hero">Accio</h1>
+    <p class="mb0">A magical <span class="b">Harry Potter Trading Card Game</span> search</p>
+    <form id="search" accept-charset="UTF-8" action="/search" method="get">
+        <input id="searchInput" class="w-50-ns w-100" type="text" name="q" autocomplete="on" autocapitalize="none" autocorrect="off" spellcheck="false" maxlength="64" />
+    </form>
+</div>
+<div class="w-100">
+    <div class="mw6 center">
+        <div id="spotlight" class="mw6 relative animated fadeIn mt5">
+            <div class="cf">
+                <div class="fl w-third relative card-image">
+                    <a href="@card1.CardPageUrl">
+                        <img src="@firstImage.Url" class="dib" />
+                    </a>
+                </div>
+                <div class="fl w-third relative card-image">
+                    <a href="@card2.CardPageUrl">
+                        <img src="@secondImage.Url" class="dib" />
+                    </a>
+                </div>
+                <div class="fl w-third relative card-image">
+                    <a href="@card3.CardPageUrl">
+                        <img src="@thirdImage.Url" class="dib" />
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

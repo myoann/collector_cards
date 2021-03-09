@@ -1,0 +1,155 @@
+﻿@page
+@model Accio.Presentation.Web.Pages.Search.IndexModel
+@{
+    ViewData["Title"] = "Accio Harry Potter TCG Search";
+    Layout = "~/Pages/Shared/_SearchLayout.cshtml";
+}
+
+@* Required for AJAX async calls *@
+@Html.AntiForgeryToken()
+
+<img class="hover-card hover-card-loading dn" alt="" src="" />
+
+<!-- Begin Details Nav -->
+<div class="w-100 z-index-1 pv2">
+    <div class="cf mw8 center">
+        <div id="searchResults" class="fl w-100 w-30-ns">
+            <p class="ma0">
+                <span class="b">Search Results</span><br />
+                <span id="cardCount" class="sub-menu-label"></span>
+            </p>
+        </div>
+        <div id="setInfo" class="fl w-100 w-30-ns dn">
+            <div class="set-header-title-container flex items-center">
+                <object class="set-header-title-icon" type="image/svg+xml"></object>
+                <h1 class="set-header-title-h1 mb0">Set Name</h1>
+            </div>
+            <p class="set-header-title-data ma0">
+
+            </p>
+        </div>
+        <div class="fl w-100 w-70-ns tr-ns tc pv2">
+            <nav>
+                <select id="setSelect" class="submenu-select dib-ns db mr1-ns">
+                    <option value="">All Sets</option>
+                </select>
+                <label class="dib-ns db mr1-ns sub-menu-label">
+                    viewed as
+                </label>
+                <select id="cardView" class="submenu-select dib-ns db mr1-ns">
+                    <option value="images">Images</option>
+                    <option value="listview">Listview</option>
+                </select>
+                <label class="dib-ns db mr1-ns sub-menu-label">
+                    sorted by
+                </label>
+                <select id="sortCardsBy" class="submenu-select dib-ns db mr1-ns">
+                    <option value="sn">Set/Number</option>
+                    <option value="name">Name</option>
+                    <option value="cost">Cost</option>
+                    <option value="type">Type</option>
+                    <option value="rarity">Rarity</option>
+                    <option value="artist">Artist</option>
+                    <option value="lesson">Lesson</option>
+                </select>
+                <label class="dib-ns db mr1-ns sub-menu-label">
+                    :
+                </label>
+                <select id="sortCardsOrder" class="submenu-select dib-ns db">
+                    <option value="asc">Asc</option>
+                    <option value="desc">Desc</option>
+                </select>
+            </nav>
+        </div>
+    </div>
+</div>
+<!-- End Details Nav -->
+<!-- Begin Content -->
+<main class="w-100 main-container">
+    <div id="contentContainer" class="mw8 center content-container pv3">
+        @* Loading *@
+        <div id="loading" class="dn" style="margin-top: 25%">
+            <svg width="49px" height="79px" viewBox="0 0 49 79" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+                <g id="hptcgDB-—-Site" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+                    <g id="Assets" transform="translate(-604.000000, -345.000000)" fill="#6B63B5">
+                        <path d="M652.044663,378.479362 L639.491452,378.479362 C638.856488,378.479362 638.397406,378.014155 638.573288,377.546667 L650.542213,345.935362 C650.837337,345.164577 649.516731,344.651481 648.875804,345.28544 L604.201756,389.372971 C603.715845,389.851861 604.163003,390.549672 604.952981,390.549672 L617.506192,390.549672 C618.147118,390.549672 618.603219,391.021721 618.421375,391.489209 L606.047028,423.057185 C605.745941,423.830251 607.060585,424.350188 607.710455,423.716229 L652.795888,379.658344 C653.284781,379.179454 652.840604,378.479362 652.044663,378.479362" id="Base-Set"></path>
+                    </g>
+                </g>
+            </svg>
+        </div>
+        @* Card container *@
+        <div id="cardContainer" class="flex flex-wrap">
+
+        </div>
+        @* Table container  *@
+        <div id="tableContainer" class="dn">
+            <table id="cardTable">
+                <thead>
+                    <tr>
+                        <!-- Card ID is hiden on initialization -->
+                        <th>CardId</th>
+                        <th>Set</th>
+                        <th>No.</th>
+                        <th class="tl">Name</th>
+                        <th>Cost</th>
+                        <th class="tl">Type</th>
+                        <th>Rarity</th>
+                        <th class="tl">Artist</th>
+                        <th>ImageUrl</th>
+                        <!-- Lesson type -->
+                        <th>LessonType</th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+        </div>
+        @* No cards container *@
+        <div id="noCardsContainer" class="center tc no-cards-container dn">
+            <div class="no-cards-items">
+                <object data="/images/mask.svg" class="no-cards-image" type="image/svg+xml"></object>
+                <h3 class="b no-cards-h3">
+                    No cards found
+                </h3>
+                <div>
+                    Your search didn't match any cards.
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+
+<!-- Card Modal -->
+@*<div id="modal-custom" data-izimodal-fullscreen="true" data-izimodal-icon="icon-home" aria-hidden="false" aria-labelledby="modal-default" role="dialog" class="iziModal" data-izimodal-group="grupo1" data-izimodal-loop="true" style="z-index: 999; border-radius: 3px; border-bottom: 3px solid rgb(136, 160, 185); overflow: hidden; max-width: 900px; display: block; height: 638px;">
+        <div class="iziModal-header" style="background: rgb(136, 160, 185); padding-right: 78px;"><i class="iziModal-header-icon icon-home"></i><div class="iziModal-progressbar"><div style="background-color: white; width: 100%;"></div></div><h2 class="iziModal-header-title">Welcome to the iziModal</h2><p class="iziModal-header-subtitle">Elegant, responsive, flexible and lightweight modal plugin with jQuery.</p><div class="iziModal-header-buttons"><a href="javascript:void(0)" class="iziModal-button iziModal-button-close" data-izimodal-close=""></a><a href="javascript:void(0)" class="iziModal-button iziModal-button-fullscreen" data-izimodal-fullscreen=""></a></div></div><div class="iziModal-wrap" style="height: auto;">
+            <div class="iziModal-content" style="padding: 20px;">
+                <p>You have several possibilities to use the easy Modal, with options, and also data-attributes. Click below for see some examples.</p>
+
+                <h4><span>Progress</span></h4>
+                <button class="btn btn-progress-start">Start Progress</button>
+                <button class="btn btn-progress-pause">Pause Progress</button>
+                <button class="btn btn-progress-resume">Resume Progress</button>
+                <button class="btn btn-progress-reset">Reset Progress</button>
+
+                <h4><span>Ajax/Fetch</span></h4>
+                <button class="btn btn-ajax">Load Ajax</button>
+                <button class="btn btn-fetch">Load Fetch</button>
+
+                <h4><span>Group</span></h4>
+                <button class="btn" data-izimodal-prev="">Prev Modal</button>
+                <button class="btn" data-izimodal-next="">Next Modal</button>
+
+                <h4><span>Data-Attributes</span></h4>
+                <button class="btn" data-izimodal-close="">Close</button>
+                <button class="btn" data-izimodal-fullscreen="">Fullscreen</button>
+                <button data-izimodal-open="#modal-custom" data-izimodal-transitionin="fadeInDown" data-izimodal-transitionout="fadeOutDown">Open a specific Modal</button>
+
+                <h4><span>Another Modal</span></h4>
+                <button class="btn" data-izimodal-open="#modal-custom" data-izimodal-zindex="20000" data-izimodal-preventclose="">Another Modal</button>
+            </div>
+        </div>
+    </div>*@
+
+<!-- End Card Modal -->
+<!-- End Content -->

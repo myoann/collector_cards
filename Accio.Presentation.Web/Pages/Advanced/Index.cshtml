@@ -1,0 +1,325 @@
+﻿@page
+@model Accio.Presentation.Web.Pages.Advanced.IndexModel
+@{
+    ViewData["Title"] = "Accio Harry Potter TCG Search - Advanced";
+    Layout = "~/Pages/Shared/_SearchLayout.cshtml";
+}
+
+@* Required for AJAX async calls *@
+@Html.AntiForgeryToken()
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fomantic-ui/2.8.7/components/dropdown.min.css" integrity="sha512-z3j2IzCEWvpzB55wuNyXiTTLI8nZoQ444IizHBKp18FyTm/wclzoxDeCxIz6niOBFmCwQiS/+0kvameIT090wA==" crossorigin="anonymous" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fomantic-ui/2.8.7/components/transition.min.css" integrity="sha512-pinUcwCNaqU0NZshAbsdo6KVLgxKgFh1YH2Hb5otGJMMnEjgH3y9wxbA3Ig2onWdMNGI/ee9SlrZ0X5xcqqnVw==" crossorigin="anonymous" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fomantic-ui/2.8.7/components/icon.min.css" integrity="sha512-I7/aUklkRw/Q5C9/7X2EH1jsng7oBb2P29tXv15+83/hu8qE0BZJyXmCX2u230RZlcf0oylQqmStJGCPxQpUQw==" crossorigin="anonymous" />
+
+<main class="w-100 main-container pl2">
+    <div class="mw8 center advanced-content-container pv3 pl5">
+        @* Card Name *@
+        <div>
+            <section class="cf w-100 flex items-center">
+                <div class="fl w-10">
+                    <div class="advanced-h3">Card Name</div>
+                </div>
+                <div class="fl w-90 pt3 ml3">
+                    <input id="cardName" type="text" class="input-reset pa2 mb2 w-50" />
+                </div>
+            </section>
+            <hr class="fb advanced-row-segment" />
+        </div>
+        @* Card Text *@
+        <div>
+            <section class="cf w-100 flex items-center">
+                <div class="fl w-10">
+                    <div class="advanced-h3">Text</div>
+                </div>
+                <div class="fl w-90 pv2 ml3">
+                    <input id="cardText" type="text" class="input-reset pa2 mv1 w-50" />
+                    <div class="advanced-text-info">Enter text that should appear in the rules box.</div>
+                </div>
+            </section>
+            <hr class="fb advanced-row-segment" />
+        </div>
+        @* Card Type *@
+        <div>
+            <section class="cf w-100 flex">
+                <div class="fl w-10">
+                    <div class="flex items-center w-100">
+                        <div class="advanced-h3 pt1">Type</div>
+                    </div>
+                </div>
+                <div class="fl w-90 ml3">
+                    <div id="cardTypes" class="ui fluid multiple search selection dropdown advanced-dropdown">
+                        <i class="dropdown icon"></i>
+                        <div class="default text"></div>
+                        <div class="menu">
+                            @foreach (var item in Model.CardTypes)
+                            {
+                                <div class="item" data-value="@item.Name">
+                                    @item.Name
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </section>
+            <hr class="fb advanced-row-segment" />
+        </div>
+        @* Keywords *@
+        <div>
+            <section class="cf w-100 flex items-center">
+                <div class="fl w-10">
+                    <div class="advanced-h3">Keywords</div>
+                </div>
+                <div class="fl w-90 ml3">
+                    <input id="keyword" class="input-reset pa2 mv1 w-50" type="text" placeholder="Any keywords, e.g. 'Wizard', 'Snake', etc." />
+                </div>
+            </section>
+            <hr class="fb advanced-row-segment" />
+        </div>
+        @* Lesson Type *@
+        <div>
+            <section class="cf w-100 flex items-center">
+                <div class="fl w-10">
+                    <div class="advanced-h3">Lesson</div>
+                </div>
+                <div class="fl w-90 pv2 ml3 flex items-center flex-wrap">
+                    <div class="checkbox-container flex items-center">
+                        <input id="comcCheckbox" class="mr2" type="checkbox">
+                        <img class="mr2" src="~/images/lessons/care-of-magical-creatures.svg" />
+                        <label for="comcCheckbox">CoMC</label>
+                    </div>
+
+                    <div class="checkbox-container ml3 flex items-center">
+                        <input id="charmsCheckbox" class="mr2" type="checkbox">
+                        <img class="mr2" src="~/images/lessons/charms.svg" />
+                        <label for="charmsCheckbox">Charms</label>
+                    </div>
+
+                    <div class="checkbox-container ml3 flex items-center">
+                        <input id="potionsCheckbox" class="mr2" type="checkbox">
+                        <img class="mr2" src="~/images/lessons/potions.svg" />
+                        <label for="potionsCheckbox">Potions</label>
+                    </div>
+
+                    <div class="checkbox-container ml3 flex items-center">
+                        <input id="quidditchCheckbox" class="mr2" type="checkbox">
+                        <img class="mr2" src="~/images/lessons/quidditch.svg" />
+                        <label for="quidditchCheckbox">Quidditch</label>
+                    </div>
+
+                    <div class="checkbox-container ml3 flex items-center">
+                        <input id="transfigurationCheckbox" class="mr2" type="checkbox">
+                        <img class="mr2" src="~/images/lessons/transfiguration.svg" />
+                        <label for="transfigurationCheckbox">Transfiguration</label>
+                    </div>
+                </div>
+            </section>
+            <hr class="fb advanced-row-segment" />
+        </div>
+        @* Power *@
+        <div>
+            <section class="cf w-100 flex items-center">
+                <div class="fl w-10">
+                    <div class="advanced-h3">Power</div>
+                </div>
+                <div class="fl w-90 pt3 ml3">
+                    <input id="power" class="input-reset pa2 mb2 w-50" type="text" />
+                </div>
+            </section>
+            <hr class="fb advanced-row-segment" />
+        </div>
+        @* Stats *@
+        <div>
+            <section class="cf w-100 flex items-center">
+                <div class="fl w-10">
+                    <div class="advanced-h3">Stats</div>
+                </div>
+
+                <div class="fl ml3">
+                    <select id="statsType" class="select-stats">
+                        <option>Health</option>
+                        <option>Damage</option>
+                    </select>
+                </div>
+                <div class="fl ml2">
+                    <select id="statsOperator" class="select-stats">
+                        <option>greater than</option>
+                        <option>greater than or equal to</option>
+                        <option>less than</option>
+                        <option>less than or equal to</option>
+                        <option>equal to</option>
+                    </select>
+                </div>
+                <div class="fl">
+                    <input id="statsValueInput" class="stat-value-input pl2 ml2" type="text" placeholder="Any value, e.g. '3'" />
+                </div>
+            </section>
+
+            <section class="cf w-100 flex items-center">
+                <div class="fl w-10">
+                </div>
+
+                <div id="statsIemsContainer" class="flex flex-column">
+
+                </div>
+            </section>
+
+            <hr class="fb advanced-row-segment" />
+        </div>
+        @* Set *@
+        <div>
+            <section class="cf w-100 flex">
+                <div class="fl w-10">
+                    <div class="advanced-h3 pt1">Set</div>
+                </div>
+                <div class="fl w-90 ml3">
+                    <div id="sets" class="ui fluid multiple search selection dropdown advanced-dropdown">
+                        <i class="dropdown icon"></i>
+                        <div class="default text"></div>
+                        <div class="menu">
+                            @foreach (var item in Model.Sets)
+                            {
+                                <div class="item" data-value="@item.ShortName">
+                                    <img src="~/images/seticons/@item.IconFileName" class="advanced-dropdown-icon" />
+                                    @item.Name
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </section>
+            <hr class="fb advanced-row-segment" />
+        </div>
+        @* Rarity *@
+        <div>
+            <section class="cf w-100 flex items-center">
+                <div class="fl w-10">
+                    <div class="advanced-h3">Rarity</div>
+                </div>
+                <div class="fl w-90">
+                    <div class="fl w-90 pv2 ml3 flex items-center flex-wrap">
+                        <div class="checkbox-container flex items-center">
+                            <input id="commonCheckbox" class="mr2" type="checkbox">
+                            <img class="mr2" src="~/images/rarities/common.svg" />
+                            <label for="commonCheckbox">Common</label>
+                        </div>
+
+                        <div class="checkbox-container ml3 flex items-center">
+                            <input id="uncommonCheckbox" class="mr2" type="checkbox">
+                            <img class="mr2" src="~/images/rarities/uncommon.svg" />
+                            <label for="uncommonCheckbox">Uncommon</label>
+                        </div>
+
+                        <div class="checkbox-container ml3 flex items-center">
+                            <input id="rareCheckbox" class="mr2" type="checkbox">
+                            <img class="mr2" src="~/images/rarities/rare.svg" />
+                            <label for="rareCheckbox">Rare</label>
+                        </div>
+
+                        <div class="checkbox-container ml3 flex items-center">
+                            <input id="premiumCheckbox" class="mr2" type="checkbox">
+                            <img class="mr2" src="~/images/rarities/premium.svg" />
+                            <label for="premiumCheckbox">Premium</label>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            <hr class="fb advanced-row-segment" />
+        </div>
+        @* Flavor Text *@
+        <div>
+            <section class="cf w-100 flex items-center">
+                <div class="fl w-10">
+                    <div class="advanced-h3">Flavor Text</div>
+                </div>
+                <div class="fl w-90 pt3 ml3">
+                    <input id="flavorText" class="input-reset pa2 mb2 w-50" type="text" placeholder="Any flavor text, e.g. 'Merlin's Beard!'" />
+                </div>
+            </section>
+            <hr class="fb advanced-row-segment" />
+        </div>
+        @* Artist *@
+        <div>
+            <section class="cf w-100 flex items-center">
+                <div class="fl w-10">
+                    <div class="advanced-h3">Card Artist</div>
+                </div>
+                <div class="fl w-90 pt3 ml3">
+                    <input id="artist" class="input-reset pa2 mb2 w-50" type="text" placeholder="Any artist, e.g. 'Ron Spencer'" />
+                </div>
+            </section>
+            <hr class="fb advanced-row-segment" />
+        </div>
+        @* Card Number *@
+        <div>
+            <section class="cf w-100 flex items-center">
+                <div class="fl w-10">
+                    <div class="advanced-h3">Card Number</div>
+                </div>
+                <div class="fl w-90 pt3 ml3">
+                    <input id="cardNumber" class="input-reset pa2 mb2 w-50" type="text" placeholder="Any number, e.g. '10'" />
+                </div>
+            </section>
+            <hr class="fb advanced-row-segment" />
+        </div>
+        @* Provides *@
+        <div>
+            <section class="cf w-100 flex items-center">
+                <div class="fl w-10">
+                    <div class="advanced-h3">Provides</div>
+                </div>
+                <div class="fl w-90 pv2 ml3 flex items-center flex-wrap">
+                    <div class="checkbox-container flex items-center">
+                        <input id="providesComcCheckbox" class="mr2" type="checkbox">
+                        <img class="mr2" src="~/images/lessons/care-of-magical-creatures.svg" />
+                        <label for="providesComcCheckbox">CoMC</label>
+                    </div>
+
+                    <div class="checkbox-container ml3 flex items-center">
+                        <input id="providesCharmsCheckbox" class="mr2" type="checkbox">
+                        <img class="mr2" src="~/images/lessons/charms.svg" />
+                        <label for="providesCharmsCheckbox">Charms</label>
+                    </div>
+
+                    <div class="checkbox-container ml3 flex items-center">
+                        <input id="providesPotionsCheckbox" class="mr2" type="checkbox">
+                        <img class="mr2" src="~/images/lessons/potions.svg" />
+                        <label for="providesPotionsCheckbox">Potions</label>
+                    </div>
+
+                    <div class="checkbox-container ml3 flex items-center">
+                        <input id="providesQuidditchCheckbox" class="mr2" type="checkbox">
+                        <img class="mr2" src="~/images/lessons/quidditch.svg" />
+                        <label for="providesQuidditchCheckbox">Quidditch</label>
+                    </div>
+
+                    <div class="checkbox-container ml3 flex items-center">
+                        <input id="providesTransfigurationCheckbox" class="mr2" type="checkbox">
+                        <img class="mr2" src="~/images/lessons/transfiguration.svg" />
+                        <label for="providesTransfigurationCheckbox">Transfiguration</label>
+                    </div>
+                </div>
+            </section>
+            <hr class="fb advanced-row-segment" />
+        </div>
+        <div>
+            <section class="cf w-100 flex items-center">
+                <div class="fl w-10">
+
+                </div>
+                <div class="fl w-90 pt3 ml3">
+                    <button id="search" class="search-button flex items-center">
+                        <object data="/images/search_dark.svg" type="image/svg+xml"></object>
+                        <div class="ml2">
+                            Search these options
+                        </div>
+                    </button>
+                </div>
+            </section>
+        </div>
+        @*
+            TODO: Add creature health and damage
+            TODO: Add display and sort
+        *@
+    </div>
+</main>
